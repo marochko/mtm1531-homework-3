@@ -7,6 +7,7 @@
 	);
 
 	$errors = array();
+	$display_thanks = false;
 
 	$name = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_STRING);
 	$email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
@@ -15,6 +16,7 @@
 	$preferredlang = filter_input(INPUT_POST, 'preferredlang', FILTER_SANITIZE_STRING);
 	$notes = filter_input(INPUT_POST, 'notes', FILTER_SANITIZE_STRING);
 	$acceptterms = filter_input(INPUT_POST, 'acceptterms', FILTER_SANITIZE_STRING);
+	
 
 	if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		if (empty($name)) {
@@ -37,15 +39,28 @@
 			$errors['preferredlang'] = true;	
 		}
 
-		if ($terms == 'unchecked') {
+		if ($acceptterms == 'unchecked') {
 			$errors['acceptterms'] = true;	
 		}
-
-
+		
+		if (empty($acceptterms)) {
+			$errors['acceptterms'] = true;
+		}
+		
+		if (empty($errors)) {
+			$display_thanks = true;
+		$email_message = 'Name: ' . $name . "\r\n"; 
+		$email_message .= 'Username: ' . $username . "\r\n";
+		$email_message .= 'Message: ' . $notes . "\r\n";
+		
+		$headers = 'From: ' . $name . ' <' . $email . '>' . "\r\n";
+		// $headers = 'Fron: Amanda <amanda.marochko@gmail.com>' "\r\n";
+		
+			
+			mail('amanda.marochko@gmail.com', $subject, $message);
+			//mail($email, 'Thanks for registering')
+		}
 	}
-
-	$message = "Thanks for your input!";
-
 ?>
 
 <!DOCTYPE HTML>
@@ -58,24 +73,12 @@
 
 <body>
 	
-<p><?php
-if (isset($_REQUEST['email'])){ 
-	$email = $_REQUEST['email'];
-	$name = $_REQUEST['name'];
-	$username = $_REQUEST['username'];
-	$password = $_REQUEST['password'];
-	$notes = $_REQUEST['notes'];
-	$from = "Amanda Marochko";
-	$headers = "From:" . $from;
-	mail($email,$name,$notes,$username,$password,$preferredlang,$headers);
-  	echo $message;
-  
-  }
-?></p>
 
 
-
-	
+	<?php if ($display_thanks): ?>
+    	<strong>Thanks!</strong>
+    <?php else: ?>
+    
 	<form method="post" action="index.php">
 		<div>
 			<label for="name">Name</label>
@@ -109,13 +112,15 @@ if (isset($_REQUEST['email'])){
 		<div>
 			<fieldset>
 				<input type="checkbox" id="acceptterms" name="acceptterms" required>
-				<label for="acceptterms">Accept the Terms of Agreement</label><?php if (isset($errors['terms'])) : ?> <strong>Please accept the Terms of Agreement to continue</strong><?php endif; ?>
+				<label for="acceptterms">Accept the Terms of Agreement</label><?php if (isset($errors['acceptterms'])): ?> <strong>Please accept the Terms of Agreement to continue</strong><?php endif; ?>
 			</fieldset>
 		</div>
 		<div>
 			<button type="submit" name="submit">Submit Form</button>
 		</div>
 	</form>
+ <?php endif; ?>
+ 
 
 </body>
 </html>
